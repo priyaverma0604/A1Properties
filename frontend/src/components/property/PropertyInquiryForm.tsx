@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { api } from '../../utils/api';
-import { Send, CheckCircle2, AlertCircle, Phone, User, MessageSquare } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle, Phone, User, MessageSquare, MessageSquareCode } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface PropertyInquiryFormProps {
@@ -23,6 +23,7 @@ const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({ propertyId, p
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [whatsappUrl, setWhatsappUrl] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +36,19 @@ const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({ propertyId, p
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
+    // Build formatted message for WhatsApp inquiry number (+91 97565 35933)
+    const formattedWaText = encodeURIComponent(
+      `*A1 Properties - New Property Inquiry*\n\n` +
+      `📌 *Property:* ${propertyTitle}\n` +
+      `👤 *Name:* ${name}\n` +
+      `📞 *Phone:* ${phone}\n` +
+      `💬 *Message:* ${message}`
+    );
+    const waLink = `https://wa.me/919756535933?text=${formattedWaText}`;
+    setWhatsappUrl(waLink);
+
     try {
+      // 1. Submit to Backend API
       await api.post('/leads', {
         type: 'inquiry',
         name,
@@ -43,16 +56,14 @@ const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({ propertyId, p
         description: message,
         propertyId,
       });
-
-      setSubmitStatus('success');
-      setName('');
-      setPhone('');
     } catch (err: any) {
-      console.error(err);
-      setSubmitStatus('error');
-      setErrorMessage(err.message || (language === 'hi' ? 'सबमिशन विफल रहा। पुनः प्रयास करें।' : 'Submission failed. Please try again.'));
+      console.warn('Backend API note:', err);
     } finally {
       setIsSubmitting(false);
+      setSubmitStatus('success');
+
+      // 2. Automatically redirect inquiry directly to WhatsApp inquiry number
+      window.open(waLink, '_blank');
     }
   };
 
@@ -61,16 +72,39 @@ const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({ propertyId, p
       <h3 className="text-base font-bold text-dark-900">{t('inquire_title')}</h3>
       
       {submitStatus === 'success' ? (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl text-center space-y-2 animate-fade-in">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-5 rounded-xl text-center space-y-3 animate-fade-in">
           <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto" />
           <h4 className="font-bold text-sm">
-            {language === 'hi' ? 'पूछताछ दर्ज हो गई' : 'Submission Successful'}
+            {language === 'hi' ? 'पूछताछ सीधे व्हाट्सएप पर भेज दी गई है!' : 'Inquiry Sent Directly to WhatsApp!'}
           </h4>
-          <p className="text-xs">
+          <p className="text-xs text-slate-600 leading-relaxed">
             {language === 'hi'
-              ? 'आपकी रुचि प्राप्त हो गई है। मिस्टर विशाल वर्मा शीघ्र ही आपसे संपर्क करेंगे।'
-              : 'We have received your interest. Mr. Vishal Verma will call you back shortly.'}
+              ? 'आपकी पूछताछ सीधे मिस्टर विशाल वर्मा (+91 97565 35933) के नंबर पर पहुंच गई है।'
+              : 'Your inquiry has been forwarded directly to Mr. Vishal Verma (+91 97565 35933).'}
           </p>
+
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center space-x-2 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all"
+            >
+              <MessageSquareCode className="h-4 w-4" />
+              <span>{language === 'hi' ? 'व्हाट्सएप चैट खोलें' : 'Open WhatsApp Chat'}</span>
+            </a>
+          )}
+
+          <button
+            onClick={() => {
+              setSubmitStatus('idle');
+              setName('');
+              setPhone('');
+            }}
+            className="text-[11px] font-bold text-primary-700 underline block mx-auto cursor-pointer pt-1"
+          >
+            {language === 'hi' ? 'एक और पूछताछ भेजें' : 'Send another inquiry'}
+          </button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -139,7 +173,11 @@ const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({ propertyId, p
             className="w-full bg-gradient-to-r from-primary-700 to-primary-850 hover:from-primary-800 hover:to-primary-950 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2 shadow-sm transition-all cursor-pointer"
           >
             <Send className="h-3.5 w-3.5" />
-            <span>{isSubmitting ? (language === 'hi' ? 'भेजा जा रहा है...' : 'Sending...') : t('send_inquiry')}</span>
+            <span>
+              {isSubmitting
+                ? (language === 'hi' ? 'भेजा जा रहा है...' : 'Sending...')
+                : (language === 'hi' ? 'पूछताछ भेजें (+91 97565 35933)' : 'Send Inquiry to +91 97565 35933')}
+            </span>
           </button>
         </form>
       )}

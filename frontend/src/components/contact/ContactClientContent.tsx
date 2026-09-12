@@ -90,8 +90,8 @@ const ContactClientContent: React.FC = () => {
 
               <div className="flex items-center space-x-3.5">
                 <Mail className="h-5.5 w-5.5 text-primary-600 shrink-0" />
-                <a href="mailto:info@a1properties.com" className="hover:text-primary-700 transition-colors">
-                  info@a1properties.com
+                <a href="mailto:a1.properties.vishalverma@gmail.com" className="hover:text-primary-700 transition-colors">
+                  a1.properties.vishalverma@gmail.com
                 </a>
               </div>
             </div>

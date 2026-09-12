@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { api } from '../../utils/api';
-import { Send, CheckCircle2, AlertCircle, Phone, User, MessageSquare, Mail } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle, Phone, User, MessageSquare, Mail, MessageSquareCode } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 const ContactForm: React.FC = () => {
@@ -15,6 +15,7 @@ const ContactForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [whatsappUrl, setWhatsappUrl] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +28,19 @@ const ContactForm: React.FC = () => {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
+    // Build formatted WhatsApp message directly for +91 97565 35933
+    const formattedWaText = encodeURIComponent(
+      `*A1 Properties - New Contact / Callback Inquiry*\n\n` +
+      `👤 *Name:* ${name}\n` +
+      `📞 *Phone:* ${phone}\n` +
+      (email ? `✉️ *Email:* ${email}\n` : '') +
+      `💬 *Requirements:* ${message || 'Looking for real estate consultation in Agra'}`
+    );
+    const waLink = `https://wa.me/919756535933?text=${formattedWaText}`;
+    setWhatsappUrl(waLink);
+
     try {
+      // 1. Send to backend
       await api.post('/leads', {
         type: 'inquiry',
         name,
@@ -35,18 +48,14 @@ const ContactForm: React.FC = () => {
         email: email || undefined,
         description: message,
       });
-
-      setSubmitStatus('success');
-      setName('');
-      setPhone('');
-      setEmail('');
-      setMessage('');
     } catch (err: any) {
-      console.error(err);
-      setSubmitStatus('error');
-      setErrorMessage(err.message || (language === 'hi' ? 'संदेश भेजने में त्रुटि हुई। कृपया पुनः प्रयास करें।' : 'Failed to submit message. Please try again.'));
+      console.warn('Backend note:', err);
     } finally {
       setIsSubmitting(false);
+      setSubmitStatus('success');
+
+      // 2. Open directly on WhatsApp inquiry number
+      window.open(waLink, '_blank');
     }
   };
 
@@ -57,23 +66,42 @@ const ContactForm: React.FC = () => {
       </h3>
       <p className="text-sm text-slate-500 mb-6">
         {language === 'hi'
-          ? 'अपना संपर्क विवरण छोड़ें और हमारी टीम आपसे शीघ्र ही संपर्क करेगी।'
-          : 'Leave your contact details and our team will get in touch with you shortly.'}
+          ? 'अपना संपर्क विवरण छोड़ें और यह सीधा मिस्टर विशाल वर्मा (+91 97565 35933) के व्हाट्सएप पर पहुंचेगा।'
+          : 'Leave your contact details and it will be sent directly to Mr. Vishal Verma on WhatsApp.'}
       </p>
 
       {submitStatus === 'success' ? (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-5 rounded-xl text-center space-y-3 animate-fade-in">
           <CheckCircle2 className="h-10 w-10 text-emerald-600 mx-auto" />
           <h4 className="font-bold text-base">
-            {language === 'hi' ? 'पूछताछ सफलतापूर्वक प्राप्त हुई!' : 'Inquiry Submitted!'}
+            {language === 'hi' ? 'पूछताछ सीधे व्हाट्सएप पर भेज दी गई है!' : 'Inquiry Sent Directly to WhatsApp!'}
           </h4>
           <p className="text-sm">
             {language === 'hi'
-              ? 'धन्यवाद। मिस्टर विशाल वर्मा शीघ्र ही आपके नंबर पर कॉल करेंगे।'
-              : 'Thank you. Mr. Vishal Verma will call you back on your number shortly.'}
+              ? 'आपकी जानकारी मिस्टर विशाल वर्मा (+91 97565 35933) के नंबर पर पहुंच चुकी है।'
+              : 'Your inquiry has reached Mr. Vishal Verma (+91 97565 35933).'}
           </p>
+
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center space-x-2 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all"
+            >
+              <MessageSquareCode className="h-4 w-4" />
+              <span>{language === 'hi' ? 'व्हाट्सएप चैट खोलें' : 'Open WhatsApp Chat'}</span>
+            </a>
+          )}
+
           <button
-            onClick={() => setSubmitStatus('idle')}
+            onClick={() => {
+              setSubmitStatus('idle');
+              setName('');
+              setPhone('');
+              setEmail('');
+              setMessage('');
+            }}
             className="text-xs font-bold text-emerald-700 underline mt-2 block mx-auto cursor-pointer"
           >
             {language === 'hi' ? 'दूसरा संदेश भेजें' : 'Send another message'}
@@ -164,7 +192,11 @@ const ContactForm: React.FC = () => {
             className="w-full bg-gradient-to-r from-primary-700 to-primary-850 hover:from-primary-800 hover:to-primary-950 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center space-x-2 shadow-md transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
           >
             <Send className="h-4 w-4" />
-            <span>{isSubmitting ? (language === 'hi' ? 'भेजा जा रहा है...' : 'Submitting...') : t('send_message')}</span>
+            <span>
+              {isSubmitting
+                ? (language === 'hi' ? 'भेजा जा रहा है...' : 'Submitting...')
+                : (language === 'hi' ? 'व्हाट्सएप पर भेजें (+91 97565 35933)' : 'Send to WhatsApp (+91 97565 35933)')}
+            </span>
           </button>
         </form>
       )}

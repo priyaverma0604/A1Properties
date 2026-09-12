@@ -337,7 +337,7 @@ const HomeClientContent: React.FC<HomeClientContentProps> = ({ featuredPropertie
             </div>
             <div className="flex items-center space-x-3">
               <Landmark className="h-5 w-5 text-primary-600 shrink-0" />
-              <span>{language === 'hi' ? 'कार्यालय: संजय प्लेस, सिविल लाइंस, आगरा' : 'Office: Sanjay Place, Civil Lines, Agra'}</span>
+              <span>{language === 'hi' ? 'कार्यालय: संजय प्लेस, आगरा' : 'Office: Sanjay Place, Agra'}</span>
             </div>
           </div>
         </div>

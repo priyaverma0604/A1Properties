@@ -464,8 +464,8 @@ export const translations: TranslationDictionary = {
     hi: 'संपर्क सूत्र',
   },
   office_address: {
-    en: 'Shop 104, Block-B, Jeevan Jyoti Tower, Sanjay Place, Agra, Uttar Pradesh - 282002',
-    hi: 'दुकान 104, ब्लॉक-बी, जीवन ज्योति टॉवर, संजय प्लेस, आगरा, उत्तर प्रदेश - 282002',
+    en: 'Shop 104, Block-B, Jeevan Jyoti Tower, Sanjay Place, Agra',
+    hi: 'दुकान 104, ब्लॉक-बी, जीवन ज्योति टॉवर, संजय प्लेस, आगरा',
   },
   all_rights_reserved: {
     en: 'All rights reserved.',

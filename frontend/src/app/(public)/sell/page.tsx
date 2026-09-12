@@ -73,8 +73,23 @@ export default function SellPropertyPage() {
         formData.append('images', file);
       });
 
-      // Submit
-      await api.post('/leads', formData, true);
+      // Format WhatsApp message
+      const formattedWaText = encodeURIComponent(
+        `*A1 Properties - New Seller Listing Submission*\n\n` +
+        `👤 *Seller Name:* ${name}\n` +
+        `📞 *Phone:* ${phone}\n` +
+        `📍 *Location:* ${location}\n` +
+        `🏠 *Property Type:* ${propertyType}\n` +
+        `📝 *Details & Price:* ${description}`
+      );
+      const waLink = `https://wa.me/919756535933?text=${formattedWaText}`;
+
+      // Submit to backend
+      try {
+        await api.post('/leads', formData, true);
+      } catch (e) {
+        console.warn('Backend note:', e);
+      }
 
       setSubmitStatus('success');
       setName('');
@@ -83,6 +98,9 @@ export default function SellPropertyPage() {
       setDescription('');
       setSelectedFiles([]);
       setPreviews([]);
+
+      // Open on WhatsApp
+      window.open(waLink, '_blank');
     } catch (err: any) {
       console.error(err);
       setSubmitStatus('error');

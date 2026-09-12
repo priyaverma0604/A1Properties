@@ -127,8 +127,8 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-primary-500 shrink-0" />
-                <a href="mailto:info@a1properties.com" className="hover:text-white transition-colors">
-                  info@a1properties.com
+                <a href="mailto:a1.properties.vishalverma@gmail.com" className="hover:text-white transition-colors">
+                  a1.properties.vishalverma@gmail.com
                 </a>
               </li>
             </ul>

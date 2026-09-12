@@ -97,8 +97,8 @@ export default async function PropertyDetailPage({ params }: Props) {
       {
         '@type': 'RealEstateAgent',
         '@id': 'https://www.agraproperties.com/#agent',
-        'name': 'Agra Properties',
-        'telephone': '+919876543210',
+        'name': 'A1 Properties',
+        'telephone': '+919756535933',
         'address': {
           '@type': 'PostalAddress',
           'streetAddress': 'Sanjay Place',
