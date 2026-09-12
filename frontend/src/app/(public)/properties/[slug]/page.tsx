@@ -5,7 +5,8 @@ import { notFound } from 'next/navigation';
 import PropertyGallery from '@/components/property/PropertyGallery';
 import PropertyMap from '@/components/property/PropertyMap';
 import PropertyInquiryForm from '@/components/property/PropertyInquiryForm';
-import PropertyCard, { PropertyData, formatIndianPrice } from '@/components/property/PropertyCard';
+import PropertyCard, { PropertyData } from '@/components/property/PropertyCard';
+import { formatIndianPrice } from '@/utils/formatters';
 import { Phone, Calendar, Heart, Share2, Sparkles, School, ShieldAlert, ShoppingBag, Eye, ShieldCheck, Check } from 'lucide-react';
 import type { Metadata } from 'next';
 import { mockProperties } from '@/utils/mockData';
@@ -14,6 +15,13 @@ type Props = {
   params: Promise<{ slug: string }> | { slug: string };
 };
 
+// Pre-render all properties as static pages for 0-second load and zero runtime errors
+export async function generateStaticParams() {
+  return mockProperties.map((p) => ({
+    slug: p.slug,
+  }));
+}
+
 async function getProperty(slug: string): Promise<PropertyData | null> {
   if (!slug) return null;
   const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -21,7 +29,7 @@ async function getProperty(slug: string): Promise<PropertyData | null> {
   
   try {
     const res = await fetch(`${baseUrl}/properties/slug/${encodeURIComponent(slug)}`, {
-      cache: 'no-store'
+      next: { revalidate: 60 }
     });
     if (res.ok) {
       const contentType = res.headers.get('content-type');

@@ -53,13 +53,19 @@ type Props = {
   params: Promise<{ slug: string }> | { slug: string };
 };
 
+export async function generateStaticParams() {
+  return mockBlogs.map((b) => ({
+    slug: b.slug,
+  }));
+}
+
 async function getBlog(slug: string): Promise<BlogData | null> {
   if (!slug) return null;
   const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
   const baseUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
   try {
     const res = await fetch(`${baseUrl}/blogs/slug/${encodeURIComponent(slug)}`, {
-      cache: 'no-store'
+      next: { revalidate: 60 }
     });
     if (res.ok) {
       const contentType = res.headers.get('content-type');
