@@ -11,54 +11,74 @@ import type { Metadata } from 'next';
 import { mockProperties } from '@/utils/mockData';
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }> | { slug: string };
 };
 
 async function getProperty(slug: string): Promise<PropertyData | null> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  if (!slug) return null;
+  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const baseUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+  
   try {
-    const res = await fetch(`${API_URL}/properties/slug/${slug}`, {
-      cache: 'no-store' // Keep it dynamic to update view count
+    const res = await fetch(`${baseUrl}/properties/slug/${encodeURIComponent(slug)}`, {
+      cache: 'no-store'
     });
-    if (!res.ok) {
-      return mockProperties.find((p) => p.slug === slug) || null;
+    if (res.ok) {
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data && data._id) return data;
+      }
     }
-    return await res.json();
   } catch (error) {
-    console.warn('Error fetching property, falling back to local mocks:', error);
-    return mockProperties.find((p) => p.slug === slug) || null;
+    console.warn('Backend fetch failed, falling back to local mocks:', error);
   }
+
+  // Safe fallback to local verified mock properties
+  return (
+    mockProperties.find(
+      (p) => p.slug === slug || decodeURIComponent(slug) === p.slug || p._id === slug
+    ) || null
+  );
 }
 
 async function getRelatedProperties(locality: string, currentId: string): Promise<PropertyData[]> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const baseUrl = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+
   try {
-    const res = await fetch(`${API_URL}/properties?locality=${encodeURIComponent(locality)}&limit=4`, {
+    const res = await fetch(`${baseUrl}/properties?locality=${encodeURIComponent(locality)}&limit=4`, {
       next: { revalidate: 60 }
     });
-    if (!res.ok) {
-      return mockProperties.filter((p) => p._id !== currentId).slice(0, 3);
+    if (res.ok) {
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data && Array.isArray(data.properties) && data.properties.length > 0) {
+          return data.properties.filter((p: PropertyData) => p._id !== currentId).slice(0, 3);
+        }
+      }
     }
-    const data = await res.json();
-    return (data.properties || []).filter((p: PropertyData) => p._id !== currentId).slice(0, 3);
   } catch (error) {
     console.warn('Error fetching related properties, falling back to local mocks:', error);
-    return mockProperties.filter((p) => p._id !== currentId).slice(0, 3);
   }
+
+  return mockProperties.filter((p) => p._id !== currentId).slice(0, 3);
 }
 
 // Generate dynamic SEO metadata
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams?.slug || '';
   const property = await getProperty(slug);
 
   if (!property) {
     return {
-      title: 'Property Not Found | Agra Properties',
+      title: 'Property Details | A1 Properties Agra',
     };
   }
 
-  const cleanTitle = `${property.title} in ${property.locality}, Agra | Agra Properties`;
+  const cleanTitle = `${property.title} in ${property.locality}, Agra | A1 Properties`;
   const cleanDesc = `Verified Listing: ${property.title} for ${property.propertyType === 'rent' ? 'rent' : 'sale'} in ${property.locality}, Agra. Size: ${property.plotSize}. Price: ${formatIndianPrice(property.price, property.propertyType)}. Verified legal documentation.`;
 
   return {
@@ -68,20 +88,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: cleanTitle,
       description: cleanDesc,
       type: 'website',
-      url: `https://www.agraproperties.com/properties/${property.slug}`,
-      images: property.images.length > 0 ? [{ url: property.images[0] }] : [],
+      url: `https://www.a1properties.com/properties/${property.slug}`,
+      images: property.images && property.images.length > 0 ? [{ url: property.images[0] }] : [],
     },
     twitter: {
       card: 'summary_large_image',
       title: cleanTitle,
       description: cleanDesc,
-      images: property.images.length > 0 ? [property.images[0]] : [],
+      images: property.images && property.images.length > 0 ? [property.images[0]] : [],
     },
   };
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
-  const { slug } = await params;
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams?.slug || '';
   const property = await getProperty(slug);
 
   if (!property) {
@@ -96,7 +117,7 @@ export default async function PropertyDetailPage({ params }: Props) {
     '@graph': [
       {
         '@type': 'RealEstateAgent',
-        '@id': 'https://www.agraproperties.com/#agent',
+        '@id': 'https://www.a1properties.com/#agent',
         'name': 'A1 Properties',
         'telephone': '+919756535933',
         'address': {
@@ -110,7 +131,7 @@ export default async function PropertyDetailPage({ params }: Props) {
       },
       {
         '@type': 'SingleFamilyResidence',
-        '@id': `https://www.agraproperties.com/properties/${property.slug}/#residence`,
+        '@id': `https://www.a1properties.com/properties/${property.slug}/#residence`,
         'name': property.title,
         'description': property.description,
         'numberOfRooms': property.bhk || undefined,
@@ -144,19 +165,19 @@ export default async function PropertyDetailPage({ params }: Props) {
             '@type': 'ListItem',
             'position': 1,
             'name': 'Home',
-            'item': 'https://www.agraproperties.com'
+            'item': 'https://www.a1properties.com'
           },
           {
             '@type': 'ListItem',
             'position': 2,
             'name': 'Properties',
-            'item': 'https://www.agraproperties.com/properties'
+            'item': 'https://www.a1properties.com/properties'
           },
           {
             '@type': 'ListItem',
             'position': 3,
             'name': property.title,
-            'item': `https://www.agraproperties.com/properties/${property.slug}`
+            'item': `https://www.a1properties.com/properties/${property.slug}`
           }
         ]
       }
@@ -281,7 +302,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100">
                   <span className="text-slate-400 font-semibold">Water Supply</span>
-                  <span className="font-bold text-dark-900">{property.waterSupply}</span>
+                  <span className="font-bold text-dark-900">{property.waterSupply || 'Municipal & Ground Water Available'}</span>
                 </div>
               </div>
             </div>
@@ -379,7 +400,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
                 {/* WhatsApp Link */}
                 <a
-                  href={`https://wa.me/${(property.whatsappNumber || '+919756535933').replace(/[^0-9]/g, '')}?text=${whatsappMessage}`}
+                  href={`https://wa.me/919756535933?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center space-x-3 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl text-sm shadow-sm transition-all"
