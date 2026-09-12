@@ -23,7 +23,7 @@ const HeroSearch: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white/95 backdrop-blur-md rounded-2xl md:rounded-3xl shadow-xl border border-slate-100 overflow-hidden animate-slide-up">
+    <div className="w-full max-w-4xl mx-auto bg-white rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden animate-slide-up">
       {/* Type Toggle Tabs */}
       <div className="flex border-b border-slate-100">
         <button

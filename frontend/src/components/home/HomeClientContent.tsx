@@ -31,46 +31,46 @@ const HomeClientContent: React.FC<HomeClientContentProps> = ({ featuredPropertie
   return (
     <div className="space-y-20 pb-16">
       {/* 1. Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center bg-dark-950 overflow-hidden py-24">
-        {/* Background Image overlay */}
-        <div className="absolute inset-0 z-0 opacity-40">
+      <section className="relative min-h-[85vh] flex items-center justify-center bg-gradient-to-b from-slate-100 via-emerald-50/20 to-slate-50 overflow-hidden py-24">
+        {/* Background Image overlay - Light & Bright Luxury Daylight Villa */}
+        <div className="absolute inset-0 z-0 opacity-25 pointer-events-none">
           <Image
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80"
+            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80"
             alt="Agra Premium Homes Background"
             fill
             priority
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-950 via-dark-900/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-slate-100/70" />
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white space-y-8">
-          <span className="inline-block bg-primary-600/35 border border-primary-500/50 text-primary-100 text-xs font-bold tracking-widest px-4.5 py-2 rounded-full uppercase animate-fade-in">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-dark-900 space-y-8">
+          <span className="inline-block bg-primary-50 border border-primary-200/80 text-primary-800 text-xs font-bold tracking-widest px-4.5 py-2 rounded-full uppercase shadow-sm animate-fade-in">
             {t('hero_badge')}
           </span>
           
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight md:leading-none">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight md:leading-none text-dark-900">
             {t('hero_title_prefix')}{' '}
             <span className="text-secondary-600">{t('hero_title_city')}</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-light">
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
             {t('hero_subtitle')}
           </p>
 
           {/* Quick Trust Pillars */}
-          <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-slate-200">
-            <span className="flex items-center space-x-1.5 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4 text-xs font-semibold text-slate-700">
+            <span className="flex items-center space-x-1.5 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200/90 shadow-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>{t('clear_titles')}</span>
             </span>
-            <span className="flex items-center space-x-1.5 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10">
-              <Clock className="w-4 h-4 text-amber-400" />
+            <span className="flex items-center space-x-1.5 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200/90 shadow-sm">
+              <Clock className="w-4 h-4 text-amber-600" />
               <span>{t('experience_years')}</span>
             </span>
-            <span className="flex items-center space-x-1.5 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10">
-              <MapPin className="w-4 h-4 text-secondary-400" />
+            <span className="flex items-center space-x-1.5 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200/90 shadow-sm">
+              <MapPin className="w-4 h-4 text-secondary-600" />
               <span>{t('local_expertise')}</span>
             </span>
           </div>
