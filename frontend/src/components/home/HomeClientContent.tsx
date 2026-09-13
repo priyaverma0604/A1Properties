@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroSearch from '@/components/home/HeroSearch';
@@ -18,18 +18,78 @@ import {
   Star,
   CheckCircle2,
   Clock,
-  MapPin
+  MapPin,
+  ChevronDown,
+  HelpCircle
 } from 'lucide-react';
 
 interface HomeClientContentProps {
   featuredProperties: PropertyData[];
 }
 
+const agraLocalities = [
+  { name: 'Sanjay Place', tag: 'Commercial & Offices', count: '12+ Listings', query: 'Sanjay Place' },
+  { name: 'Avas Vikas Colony', tag: 'Duplex & Houses', count: '18+ Listings', query: 'Avas Vikas' },
+  { name: 'Shastripuram', tag: 'Gated Societies & Plots', count: '15+ Listings', query: 'Shastripuram' },
+  { name: 'Dayalbagh', tag: 'Villas & Residential', count: '10+ Listings', query: 'Dayalbagh' },
+  { name: 'Kamla Nagar', tag: 'Independent Houses', count: '8+ Listings', query: 'Kamla Nagar' },
+  { name: 'Fatehabad Road', tag: 'Luxury & Commercial', count: '14+ Listings', query: 'Fatehabad Road' },
+  { name: 'Kuberpur (NH-19)', tag: 'Warehouses & Industrial', count: '6+ Listings', query: 'Kuberpur' },
+  { name: 'Sikandra', tag: 'Plots & Budget Homes', count: '9+ Listings', query: 'Sikandra' },
+];
+
+const faqs = [
+  {
+    qEn: 'Which are the best localities to buy residential property in Agra?',
+    qHi: 'आगरा में आवासीय संपत्ति खरीदने के लिए सबसे अच्छे क्षेत्र कौन से हैं?',
+    aEn: 'The most popular residential areas in Agra include Avas Vikas Colony (Sector 7 & 12), Shastripuram, Dayalbagh, and Kamla Nagar. These areas feature wide roads, 24-hour water supply, security, and close proximity to top schools and hospitals.',
+    aHi: 'आगरा में आवास विकास कॉलोनी (सेक्टर 7 व 12), शास्त्रीपुरम, दयालबाग और कमला नगर सबसे प्रमुख आवासीय क्षेत्र हैं। यहां चौड़ी सड़कें, स्वच्छ पानी और स्कूल-अस्पताल की बेहतरीन सुविधाएं उपलब्ध हैं।'
+  },
+  {
+    qEn: 'What is the average circle rate for residential plots in Agra?',
+    qHi: 'आगरा में आवासीय प्लॉट का औसत सर्किल रेट क्या है?',
+    aEn: 'Circle rates in Agra vary by micro-market: Avas Vikas (₹35,000–₹55,000/sq.yd), Shastripuram (₹40,000–₹60,000/sq.yd), Dayalbagh (₹30,000–₹50,000/sq.yd), and Sanjay Place commercial rates start from ₹1,50,000/sq.yd. A1 Properties assists with government circle rate valuation and stamp duty calculation.',
+    aHi: 'आगरा में आवास विकास में ₹35,000–₹55,000/गज, शास्त्रीपुरम में ₹40,000–₹60,000/गज और संजय प्लेस में कमर्शियल दरें ₹1,50,000/गज से शुरू होती हैं। ए1 प्रॉपर्टीज सर्किल रेट व स्टांप शुल्क में पूरी सहायता प्रदान करता है।'
+  },
+  {
+    qEn: 'How can I verify ADA approval and registry documents before buying?',
+    qHi: 'संपत्ति खरीदने से पहले एडीए (ADA) अप्रूवल और रजिस्ट्री दस्तावेजों की जांच कैसे करें?',
+    aEn: 'Our senior consultant Mr. Vishal Verma conducts rigorous legal title verification, including ADA approval check, 30-year non-encumbrance certificate, registry verification, and mutation (dakhil kharij) records before recommending any property.',
+    aHi: 'हमारे वरिष्ठ कंसल्टेंट श्री विशाल वर्मा हर प्रॉपर्टी का एडीए अप्रूवल, 30 साल की भारमुक्त (Non-encumbrance) जांच, रजिस्ट्री और दाखिल-खारिज रिकॉर्ड सत्यापित करने के बाद ही डील करवाते हैं।'
+  },
+  {
+    qEn: 'Are commercial offices and industrial warehouses available for rent in Agra?',
+    qHi: 'क्या आगरा में कमर्शियल ऑफिस और वेयरहाउस किराये पर उपलब्ध हैं?',
+    aEn: 'Yes, A1 Properties has verified prime office spaces in Sanjay Place (Civil Lines) and high-ceiling industrial warehouses/sheds on Kanpur-Agra Highway (Kuberpur) with direct 3-phase electricity and water connections included.',
+    aHi: 'जी हाँ, हमारे पास संजय प्लेस में प्रीमियम ऑफिस स्पेस और कुबेरपुर (कानपुर-आगरा हाईवे) पर बिजली-पानी कनेक्शन सहित इंडस्ट्रियल वेयरहाउस व शेड किराये पर उपलब्ध हैं।'
+  }
+];
+
 const HomeClientContent: React.FC<HomeClientContentProps> = ({ featuredProperties }) => {
   const { t, language } = useLanguage();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': faqs.map((faq) => ({
+      '@type': 'Question',
+      'name': language === 'hi' ? faq.qHi : faq.qEn,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': language === 'hi' ? faq.aHi : faq.aEn
+      }
+    }))
+  };
 
   return (
     <div className="space-y-20 pb-16">
+      {/* FAQ Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
       {/* 1. Hero Section */}
       <section className="relative min-h-[85vh] flex items-center justify-center bg-dark-950 overflow-hidden py-24">
         {/* Background Image overlay - House clearly visible with soft light overlay */}
@@ -104,6 +164,41 @@ const HomeClientContent: React.FC<HomeClientContentProps> = ({ featuredPropertie
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {featuredProperties.map((property) => (
             <PropertyCard key={property._id} property={property} />
+          ))}
+        </div>
+      </section>
+
+      {/* 2.5 Explore Properties in Top Agra Localities (SEO Hub) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center space-y-3 mb-10">
+          <span className="text-xs font-black tracking-widest text-primary-700 uppercase">
+            {language === 'hi' ? 'आगरा के प्रमुख इलाके' : 'Agra Micro-Markets'}
+          </span>
+          <h2 className="text-3xl font-extrabold text-dark-900">
+            {language === 'hi' ? 'आगरा के शीर्ष क्षेत्रों में प्रॉपर्टी देखें' : 'Explore Properties in Top Agra Localities'}
+          </h2>
+          <p className="text-slate-500 text-sm max-w-xl mx-auto">
+            {language === 'hi' 
+              ? 'संजय प्लेस, आवास विकास, शास्त्रीपुरम और दयालबाग में सत्यापित मकान, प्लॉट और दुकानें।'
+              : 'Verified independent houses, residential plots, and commercial spaces across prime Agra hubs.'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {agraLocalities.map((loc, idx) => (
+            <Link
+              key={idx}
+              href={`/properties?search=${encodeURIComponent(loc.query)}`}
+              className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-xs hover:shadow-md hover:border-primary-500 transition-all group block"
+            >
+              <div className="flex items-center space-x-2 text-primary-700 mb-1">
+                <MapPin className="h-4 w-4 shrink-0 group-hover:scale-110 transition-transform" />
+                <h3 className="font-bold text-dark-900 text-sm group-hover:text-primary-700 transition-colors">
+                  {loc.name}
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 pl-6">{loc.tag}</p>
+            </Link>
           ))}
         </div>
       </section>
@@ -270,6 +365,56 @@ const HomeClientContent: React.FC<HomeClientContentProps> = ({ featuredPropertie
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 5.5 Real Estate in Agra - FAQs (SEO Rich Snippets) */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs font-black tracking-widest text-primary-700 uppercase">
+            {language === 'hi' ? 'अक्सर पूछे जाने वाले सवाल' : 'Frequently Asked Questions'}
+          </span>
+          <h2 className="text-3xl font-extrabold text-dark-900">
+            {language === 'hi' ? 'आगरा रियल एस्टेट से जुड़े सवाल और जवाब' : 'Buying & Selling Properties in Agra - FAQ'}
+          </h2>
+          <p className="text-slate-500 text-sm">
+            {language === 'hi' 
+              ? 'आगरा में प्रॉपर्टी खरीदने, सर्किल रेट और रजिस्ट्री से जुड़े आपके सभी सवालों के जवाब।' 
+              : 'Everything you need to know about Agra property rates, registry legalities, and prime localities.'}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {faqs.map((faq, index) => {
+            const isOpen = openFaq === index;
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-slate-200/70 overflow-hidden transition-all shadow-xs"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : index)}
+                  className="w-full text-left p-5 flex items-center justify-between space-x-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
+                >
+                  <span className="font-bold text-dark-900 text-sm md:text-base flex items-center space-x-2.5">
+                    <HelpCircle className="h-4.5 w-4.5 text-primary-600 shrink-0" />
+                    <span>{language === 'hi' ? faq.qHi : faq.qEn}</span>
+                  </span>
+                  <ChevronDown
+                    className={`h-5 w-5 text-slate-400 shrink-0 transition-transform duration-200 ${
+                      isOpen ? 'rotate-180 text-primary-600' : ''
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1 text-slate-600 text-sm leading-relaxed border-t border-slate-100">
+                    {language === 'hi' ? faq.aHi : faq.aEn}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
