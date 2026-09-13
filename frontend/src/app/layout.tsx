@@ -14,7 +14,7 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: 'A1 Properties | Property Dealer & Consultant in Agra',
   description: 'Find premium residential flats, plots, houses, and commercial office spaces for sale or rent in Agra. Best investment locations and registry guidance.',
-  metadataBase: new URL('https://www.a1properties.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://a1properties-frontend.onrender.com'),
 };
 
 export default function RootLayout({
